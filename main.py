@@ -263,9 +263,6 @@ class AnimalRegistrationApp(QWidget):
         self.df = set_max_count(self.df)
         self.df = set_duration(self.df)
 
-        # self.df['folder_name'] = self.df.apply(
-        #     lambda row: get_folder_name(directory, row['folder_name'], row['image_name']), axis=1)
-
         self.current_page = 0
         self.display_table()
         self.download_button.setEnabled(True)
