@@ -34,6 +34,6 @@ def get_folder_name(root_path, file_path, filename):
     folder_name = os.path.relpath(file_path_without_filename, root_path)
 
     if folder_name == "":
-        folder_name = filename
+        folder_name = os.path.basename(file_path).strip('\\')
 
     return folder_name
