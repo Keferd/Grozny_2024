@@ -13,8 +13,9 @@ from .model_init import detector, classificator, detector_config, device, classi
 def detection(src_dir: str, progress_callback=None):
     # Load main config
 
-    pathes_to_imgs = [i for i in Path(src_dir).glob("*")
+    pathes_to_imgs = [i for i in Path(src_dir).rglob("*")
                       if i.suffix.lower() in [".jpeg", ".jpg", ".png"]]
+
 
     # Inference
     if len(pathes_to_imgs):
@@ -40,9 +41,7 @@ def detection(src_dir: str, progress_callback=None):
 
                     # Inference classificator
                     for img_name, batch_images_cls in dict_crops.items():
-                        # if len(batch_images_cls) > classificator_config.batch_size:
-                        full_img_path = os.path.join(src_dir, img_name)
-                        creation_time = get_image_creation_time(full_img_path)
+                        creation_time = get_image_creation_time(img_name)
                         num_packages_cls = np.ceil(len(batch_images_cls) / classificator_config.batch_size).astype(
                             np.int32)
                         for j in range(num_packages_cls):
@@ -58,8 +57,8 @@ def detection(src_dir: str, progress_callback=None):
 
                             class_names = [mapping[top_class_idx[idx]] for idx, _ in enumerate(batch_images_cls)]
 
-                            list_predictions.extend([[src_dir, name, cls, prob, creation_time] for name, cls, prob in
-                                                     zip(repeat(img_name, len(class_names)), class_names, top_p)])
+                            list_predictions.extend([[name, img_name, cls, prob, creation_time] for name, cls, prob in
+                                                     zip(repeat(img_name.name, len(class_names)), class_names, top_p)])
 
                 if progress_callback:
                     progress_callback(int((i + 1) / num_packages_det * 100))
@@ -68,15 +67,15 @@ def detection(src_dir: str, progress_callback=None):
 
 @timeit
 def get_df_from_predictions(list_predictions: list) -> pd.DataFrame:
-    table = pd.DataFrame(list_predictions, columns=["folder_name", "image_name", "class_name", "confidence", "creation_time"])
+    table = pd.DataFrame(list_predictions, columns=["image_name", "folder_name", "class_name", "confidence", "creation_time"])
     table['creation_time'] = pd.to_datetime(table['creation_time'], format='%Y:%m:%d %H:%M:%S', errors='coerce')
-
+    print("---------TABLE\n", table)
 
     agg_functions = {
         'class_name': ['count'],
         "confidence": ["mean"]
     }
-    groupped = table.groupby(["folder_name", 'image_name', "class_name", "creation_time"]).agg(agg_functions)
+    groupped = table.groupby(['image_name', "folder_name", "class_name", "creation_time"]).agg(agg_functions)
     img_names = groupped.index.get_level_values("image_name").unique()
 
     final_res = []
@@ -95,7 +94,7 @@ def get_df_from_predictions(list_predictions: list) -> pd.DataFrame:
         else:
             final_res.extend(statistic_by_max_objects.reset_index().values)
 
-    final_table = pd.DataFrame(final_res, columns=["folder_name", "image_name", "class_name", "creation_time", "count", "confidence"])
-
+    final_table = pd.DataFrame(final_res, columns=["image_name", "folder_name", "class_name", "creation_time", "count", "confidence"])
+    print("---------FINAL TABLE\n", final_table)
     return final_table
 
