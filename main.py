@@ -86,8 +86,6 @@ class AnimalRegistrationApp(QWidget):
             }
         """)
 
-
-
         # Directory path
         self.directory_path = QLineEdit(self)
         self.directory_path.setPlaceholderText("Директория...")
@@ -165,8 +163,8 @@ class AnimalRegistrationApp(QWidget):
         sidebar_layout.addWidget(spacer_bottom)
         sidebar_layout.addWidget(self.download_button)
         sidebar_layout.addStretch(1)
-        sidebar_layout.addLayout(pagination_layout, 4, 0, 1, 3)
-        sidebar_layout.addWidget(self.progress_bar, 5, 0, 1, 3)
+        sidebar_layout.addLayout(pagination_layout)
+        sidebar_layout.addWidget(self.progress_bar)
 
 
 
@@ -175,10 +173,6 @@ class AnimalRegistrationApp(QWidget):
         sidebar_widget.setObjectName("sidebar")
         sidebar_widget.setLayout(sidebar_layout)
         sidebar_widget.setMaximumWidth(300)
-
-        sidebar_widget.addLayout(pagination_layout, 4, 0, 1, 3)
-        sidebar_widget.addWidget(self.progress_bar, 5, 0, 1, 3)
-
 
         # Table view
         self.table = QTableWidget(self)
@@ -242,7 +236,7 @@ class AnimalRegistrationApp(QWidget):
         self.progress_bar.setValue(value)
 
     def display_table(self):
-        self.table.blockSignals(True)
+        # self.table.blockSignals(True)
         self.table.clear()
         start_index = self.current_page * self.rows_per_page
         end_index = min(start_index + self.rows_per_page, len(self.df))
