@@ -1,13 +1,18 @@
+from pprint import pprint
+
 import pandas as pd
 from datetime import timedelta
+import math
+import random
 
 
-def base(df):
+def base(df: pd.DataFrame) -> pd.DataFrame:
     registration_number = 1
     first_timestamp = df.loc[0, 'creation_time']
     current_class = df.loc[0, 'class_name']
 
     df['registrations_id'] = 0
+    df["registration_class"] = df["class_name"]
 
     for i in range(len(df)):
         if df.loc[i, 'class_name'] != current_class:
@@ -23,6 +28,7 @@ def base(df):
 
         # Присваиваем текущий номер регистрации
         df.loc[i, 'registrations_id'] = registration_number
+        df.loc[i, 'registration_class'] = current_class
 
     return df
 
@@ -43,19 +49,19 @@ def sliding_window(df, window_size=1, max_interval=timedelta(minutes=30)):
         return df.loc[row_index, 'class_name']
 
     # Применяем функцию скользящего окна к каждому ряду
-    df['class_name'] = df.index.map(get_correct_class)
+    df['registration_class'] = df.index.map(get_correct_class)
 
     # Инициализируем первый номер регистрации и первую временную метку
     registration_number = 1
     first_timestamp = df.loc[0, 'creation_time']
-    current_class = df.loc[0, 'class_name']
+    current_class = df.loc[0, 'registration_class']
 
     df['registrations_id'] = 0
 
     for i in range(len(df)):
-        if df.loc[i, 'class_name'] != current_class:
+        if df.loc[i, 'registration_class'] != current_class:
             registration_number += 1
-            current_class = df.loc[i, 'class_name']
+            current_class = df.loc[i, 'registration_class']
             first_timestamp = df.loc[i, 'creation_time']
 
         elif df.loc[i, 'creation_time'] - first_timestamp > max_interval:
@@ -75,6 +81,7 @@ def threshold(df, confidence_threshold=0.8, max_interval=timedelta(minutes=30)):
     current_class = df.loc[0, 'class_name']
 
     df['registrations_id'] = 0
+    df["registration_class"] = df["class_name"]
 
     for i in range(len(df)):
         if df.loc[i, 'class_name'] != current_class and df.loc[i, 'confidence'] >= confidence_threshold:
@@ -87,7 +94,7 @@ def threshold(df, confidence_threshold=0.8, max_interval=timedelta(minutes=30)):
             first_timestamp = df.loc[i, 'creation_time']
 
         df.loc[i, 'registrations_id'] = registration_number
-
+        df.loc[i, 'registration_class'] = current_class
     return df
 
 
@@ -108,21 +115,21 @@ def sliding_window_and_treshold(df, window_size=2, max_interval=timedelta(minute
         return df.loc[row_index, 'class_name']
 
     # Применяем функцию скользящего окна к каждому ряду
-    df['class_name'] = df.index.map(get_correct_class)
+    df['registration_class'] = df.index.map(get_correct_class)
 
     # Инициализируем первый номер регистрации и первую временную метку
     registration_number = 1
     first_timestamp = df.loc[0, 'creation_time']
-    current_class = df.loc[0, 'class_name']
+    current_class = df.loc[0, 'registration_class']
 
     # Создаем пустые столбцы для регистрации и продолжительности регистрации
     df['registrations_id'] = 0
 
     # Проходим по каждой строке DataFrame
     for i in range(len(df)):
-        if df.loc[i, 'class_name'] != current_class:
+        if df.loc[i, 'registration_class'] != current_class:
             registration_number += 1
-            current_class = df.loc[i, 'class_name']
+            current_class = df.loc[i, 'registration_class']
             first_timestamp = df.loc[i, 'creation_time']
 
         elif df.loc[i, 'creation_time'] - first_timestamp > max_interval:
@@ -133,6 +140,91 @@ def sliding_window_and_treshold(df, window_size=2, max_interval=timedelta(minute
 
     return df
 
+
+def calculate_probability(time_delta_seconds, initial_probability=1.0, lambda_=0.003):
+    probability = 1 - initial_probability * math.exp(-lambda_ * time_delta_seconds)
+    return probability
+
+
+def distribution_method(df: pd.DataFrame) -> pd.DataFrame:
+
+    registration_number = 1
+    first_timestamp = df.loc[0, 'creation_time']
+    current_class = df.loc[0, 'class_name']
+
+    df['registrations_id'] = 0
+    df["registration_class"] = df["class_name"]
+    df.loc[0, 'registrations_id'] = registration_number
+
+    for i in range(1, len(df)):
+        time_delta = df.loc[i, 'creation_time'] - first_timestamp
+        time_delta_seconds = time_delta.total_seconds()
+
+        probability = calculate_probability(time_delta_seconds)
+        random_value = random.random()
+
+        if df.loc[i, 'class_name'] != current_class and random_value < probability:
+            registration_number += 1
+            current_class = df.loc[i, 'class_name']
+            first_timestamp = df.loc[i, 'creation_time']
+
+        elif df.loc[i, 'creation_time'] - first_timestamp > timedelta(minutes=30):
+            # Превышен интервал в 30 минут
+            registration_number += 1
+            first_timestamp = df.loc[i, 'creation_time']
+
+        df.loc[i, 'registrations_id'] = registration_number
+        df.loc[i, 'registration_class'] = current_class
+
+    return df
+
+
+def duper_method(df, window_size=2, max_interval=timedelta(minutes=30)):
+    def get_correct_class(row_index):
+        start = max(0, row_index - window_size)
+        end = min(len(df), row_index + window_size + 1)
+        window = df.iloc[start:end]
+
+        # Исключаем записи, которые превышают максимальный интервал
+        window = window[window['creation_time'] - df.loc[row_index, 'creation_time'] <= max_interval]
+
+        if len(window) > 0:
+            weighted_classes = window.groupby('class_name')['confidence'].sum()
+            most_confident_class = weighted_classes.idxmax()
+            return most_confident_class
+        return df.loc[row_index, 'class_name']
+
+    # Применяем функцию скользящего окна к каждому ряду
+    df['registration_class'] = df.index.map(get_correct_class)
+
+    # Инициализируем первый номер регистрации и первую временную метку
+    registration_number = 1
+    first_timestamp = df.loc[0, 'creation_time']
+    current_class = df.loc[0, 'registration_class']
+
+    # Создаем пустые столбцы для регистрации и продолжительности регистрации
+    df['registrations_id'] = 0
+
+    # Проходим по каждой строке DataFrame
+    for i in range(1, len(df)):
+        time_delta = df.loc[i, 'creation_time'] - first_timestamp
+        time_delta_seconds = time_delta.total_seconds()
+
+        probability = calculate_probability(time_delta_seconds)
+
+        # Рандомное число от 0 до 1
+        random_value = random.random()
+
+        if df.loc[i, 'registration_class'] != current_class or random_value > probability:
+            registration_number += 1
+            current_class = df.loc[i, 'registration_class']
+            first_timestamp = df.loc[i, 'creation_time']
+
+        df.loc[i, 'registrations_id'] = registration_number
+
+    return df
+
+pd.set_option('display.max_columns', None)
 
 if __name__ == "__main__":
     # Пример использования
@@ -163,5 +255,5 @@ if __name__ == "__main__":
     df = pd.DataFrame(data)
     df['creation_time'] = pd.to_datetime(df['creation_time'])
 
-    df = sliding_window_and_treshold(df)
-    print(df)
+    df = distribution_method(df)
+    print(df[["class_name", "creation_time", "registration_class", "registrations_id"]])
