@@ -2,6 +2,7 @@ import sys
 import pandas as pd
 from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem, QHeaderView, QGridLayout)
 from PyQt5.QtCore import Qt
+from ml.detection import get_df_from_predictions, detection
 
 class AnimalRegistrationApp(QWidget):
     def __init__(self):
@@ -91,15 +92,8 @@ class AnimalRegistrationApp(QWidget):
         if not directory:
             QMessageBox.warning(self, 'Предупреждение', 'Пожалуйста, выберите директорию.')
             return
-        
-        # Пример обработки данных, создаем DataFrame
-        data = {
-            'Исполнитель': ['Львовский городской округ'] * 5,
-            'Группа тем': ['Благоустройство'] * 5,
-            'Текст инцидента': ['Текст инцидента'] * 5,
-            'Тема': ['Ямы во дворах'] * 5,
-        }
-        self.df = pd.DataFrame(data)
+        predictions = detection(src_dir=directory)
+        self.df = get_df_from_predictions(list_predictions=predictions)
         
         self.display_table()
         self.download_button.setEnabled(True)
