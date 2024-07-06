@@ -1,4 +1,8 @@
 import sys
+import os
+from pathlib import Path
+import pandas as pd
+
 from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout,
                              QHBoxLayout, QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem,
                              QHeaderView, QGridLayout, QSizePolicy, QSpacerItem, QProgressBar,
@@ -27,7 +31,6 @@ class ImageDialog(QDialog):
         self.label.setPixmap(scaled_pixmap)
         layout.addWidget(self.label)
         self.setLayout(layout)
-
 
 class AnimalRegistrationApp(QWidget):
     def __init__(self):
@@ -151,11 +154,13 @@ class AnimalRegistrationApp(QWidget):
         self.download_button.setCursor(Qt.PointingHandCursor)
         self.download_button.clicked.connect(self.download_table)
 
+
         # Horizontal layout for centering the download button
         download_button_layout = QHBoxLayout()
         download_button_layout.addStretch(1)  # Add stretchable space on the left
         download_button_layout.addWidget(self.download_button)  # Add the button in the center
         download_button_layout.addStretch(1)  # Add stretchable space on the right
+
 
         # Horizontal layout for directory_path and browse_button
         directory_layout = QHBoxLayout()
@@ -207,6 +212,7 @@ class AnimalRegistrationApp(QWidget):
 
         # sidebar_layout.addLayout(pagination_layout)
 
+
         # Sidebar widget
         sidebar_widget = QWidget()
         sidebar_widget.setObjectName("sidebar")
@@ -221,11 +227,13 @@ class AnimalRegistrationApp(QWidget):
         self.table.itemChanged.connect(self.update_dataframe)
         self.table.cellClicked.connect(self.show_image_dialog)
 
+
         table_layout = QVBoxLayout()
         table_layout.setContentsMargins(0, 0, 0, 0)
         table_layout.addWidget(self.table)
         # table_layout.addWidget(self.progress_bar)
         table_layout.addLayout(pagination_layout)
+
 
         # Main inner layout for sidebar and table
         main_inner_layout = QHBoxLayout()
@@ -233,6 +241,7 @@ class AnimalRegistrationApp(QWidget):
         main_inner_layout.setSpacing(0)
         main_inner_layout.addWidget(sidebar_widget)
         main_inner_layout.addLayout(table_layout)
+
 
         # Main layout for sidebar and table
         main_layout = QVBoxLayout(self)
@@ -262,6 +271,8 @@ class AnimalRegistrationApp(QWidget):
         self.df = base(self.df)
         self.df = set_max_count(self.df)
         self.df = set_duration(self.df)
+
+        self.df['folder_name'] = self.df["folder_name"].apply(get_folder_name)
 
         self.current_page = 0
         self.display_table()
