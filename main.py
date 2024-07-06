@@ -22,6 +22,8 @@ class ImageDialog(QDialog):
         layout = QVBoxLayout()
         self.label = QLabel()
 
+        print(image_path)
+        print(type(image_path))
         pixmap = QPixmap(image_path)
         screen = QApplication.primaryScreen()
         screen_size = screen.size()
@@ -343,14 +345,14 @@ class AnimalRegistrationApp(QWidget):
     def download_table(self):
         file_path, _ = QFileDialog.getSaveFileName(self, 'Сохранить файл', '', 'CSV files (*.csv)')
         if file_path:
-            self.df = get_submit_dataframe(self.df)
-            self.df.to_csv(file_path, index=False, sep=',')
+            result_df = get_submit_dataframe(self.df)
+            result_df.to_csv(file_path, index=False, sep=',')
             QMessageBox.information(self, 'Успех', 'Таблица успешно сохранена.')
 
     def show_image_dialog(self, row, column):
         if column == self.df.columns.get_loc('image_name'):
             folder_name = self.df.iloc[row]['folder_name']
-            self.image_dialog = ImageDialog(folder_name)
+            self.image_dialog = ImageDialog(str(folder_name))
             self.image_dialog.setWindowModality(Qt.NonModal)
             self.image_dialog.show()
 
