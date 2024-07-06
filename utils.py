@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 from datetime import datetime, timedelta
-
+from pathlib import Path
 
 def convert_to_datetime(seconds):
     delta = timedelta(seconds=seconds)
@@ -29,11 +29,5 @@ def set_max_count(df):
     return result_df
 
 
-def get_folder_name(root_path, file_path, filename):
-    file_path_without_filename = file_path.replace('\\' + filename, '')
-    folder_name = os.path.relpath(file_path_without_filename, root_path)
-
-    if folder_name == "":
-        folder_name = os.path.basename(file_path).strip('\\')
-
-    return folder_name
+def get_folder_name(path):
+    return Path(path).parent.name
