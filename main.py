@@ -1,6 +1,10 @@
 import sys
 import os
 import pandas as pd
+
+from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout,
+                             QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem, QHeaderView, QSizePolicy,
+                             QSpacerItem, QProgressBar, QDialog)
 from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout,
                              QHBoxLayout, QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem,
                              QHeaderView, QGridLayout, QSizePolicy, QSpacerItem, QProgressBar,
@@ -8,8 +12,13 @@ from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QLineEdit, QPushButt
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
 from ml.detection import get_df_from_predictions, detection
+from registration_algorithms import threshold, base
+from utils import set_max_count, set_duration
+from submit import get_submit_dataframe
+
 from PyQt5.QtGui import QFontDatabase
 from PyQt5.QtGui import QIcon
+
 
 class ImageDialog(QDialog):
     def __init__(self, image_path):
@@ -130,12 +139,14 @@ class AnimalRegistrationApp(QWidget):
         spacer.setFixedSize(260, 3)
         spacer.setStyleSheet("background-color: #FFFFFF;")
 
+
         # recalculation buttton
         self.recalculation_button = QPushButton('Пересчитать', self)
         self.recalculation_button.setEnabled(False)
         self.recalculation_button.setMinimumWidth(100)  # Adjust minimum width as needed
         self.recalculation_button.setCursor(Qt.PointingHandCursor)
         self.recalculation_button.clicked.connect(self.recalculation_data)
+
 
         # Spacer bottom
         spacer_bottom = QWidget()
@@ -150,11 +161,13 @@ class AnimalRegistrationApp(QWidget):
         self.download_button.setCursor(Qt.PointingHandCursor)
         self.download_button.clicked.connect(self.download_table)
 
+
         # Horizontal layout for centering the download button
         download_button_layout = QHBoxLayout()
         download_button_layout.addStretch(1)  # Add stretchable space on the left
         download_button_layout.addWidget(self.download_button)  # Add the button in the center
         download_button_layout.addStretch(1)  # Add stretchable space on the right
+
 
         # Horizontal layout for directory_path and browse_button
         directory_layout = QHBoxLayout()
@@ -203,7 +216,9 @@ class AnimalRegistrationApp(QWidget):
         sidebar_layout.addLayout(download_button_layout) 
         sidebar_layout.addStretch(1)
         sidebar_layout.addWidget(self.progress_bar)
+
         # sidebar_layout.addLayout(pagination_layout)
+
 
         # Sidebar widget
         sidebar_widget = QWidget()
@@ -219,11 +234,13 @@ class AnimalRegistrationApp(QWidget):
         self.table.itemChanged.connect(self.update_dataframe)
         self.table.cellClicked.connect(self.show_image_dialog)
 
+
         table_layout = QVBoxLayout()
         table_layout.setContentsMargins(0, 0, 0, 0)
         table_layout.addWidget(self.table)
         # table_layout.addWidget(self.progress_bar)
         table_layout.addLayout(pagination_layout)
+
 
         # Main inner layout for sidebar and table
         main_inner_layout = QHBoxLayout()
@@ -231,6 +248,7 @@ class AnimalRegistrationApp(QWidget):
         main_inner_layout.setSpacing(0)
         main_inner_layout.addWidget(sidebar_widget)
         main_inner_layout.addLayout(table_layout)
+
 
         # Main layout for sidebar and table
         main_layout = QVBoxLayout(self)
@@ -255,7 +273,11 @@ class AnimalRegistrationApp(QWidget):
         self.progress_bar.setValue(0)
         predictions = detection(src_dir=directory, progress_callback=self.update_progress)
         self.df = get_df_from_predictions(list_predictions=predictions)
-        # FIXME add here post processing
+
+        # Постпроцессинг
+        self.df = base(self.df)
+        self.df = set_max_count(self.df)
+        self.df = set_duration(self.df)
 
         self.current_page = 0
         self.display_table()
@@ -273,11 +295,13 @@ class AnimalRegistrationApp(QWidget):
         self.display_table()
         self.update_pagination_buttons()
 
+
     def show_image(self, row, column):
         if column == self.df.columns.get_loc("image_name"):
             folder_name = self.df.iloc[row]['folder_name']
             image_name = self.df.iloc[row]['image_name']
             full_image_path = os.path.join(folder_name, image_name)
+
 
 
     def update_progress(self, value):
@@ -333,9 +357,10 @@ class AnimalRegistrationApp(QWidget):
         self.df.iat[row, column] = value
 
     def download_table(self):
-        file_path, _ = QFileDialog.getSaveFileName(self, 'Сохранить файл', '', 'Excel files (*.xlsx)')
+        file_path, _ = QFileDialog.getSaveFileName(self, 'Сохранить файл', '', 'CSV files (*.csv)')
         if file_path:
-            self.df.to_excel(file_path, index=False)
+            self.df = get_submit_dataframe(self.df)
+            self.df.to_csv(file_path, index=False, sep=',')
             QMessageBox.information(self, 'Успех', 'Таблица успешно сохранена.')
 
     def show_image_dialog(self, row, column):
