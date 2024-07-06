@@ -222,11 +222,6 @@ class AnimalRegistrationApp(QWidget):
         self.download_button.setEnabled(True)
         self.update_pagination_buttons()
 
-    def show_image(self, row, column):
-        if column == self.df.columns.get_loc("image_name"):
-            folder_name = self.df.iloc[row]['folder_name']
-            image_name = self.df.iloc[row]['image_name']
-            full_image_path = os.path.join(folder_name, image_name)
 
     def update_progress(self, value):
         self.progress_bar.setValue(value)
@@ -282,9 +277,7 @@ class AnimalRegistrationApp(QWidget):
     def show_image_dialog(self, row, column):
         if column == self.df.columns.get_loc('image_name'):
             folder_name = self.df.iloc[row]['folder_name']
-            image_name = self.df.iloc[row]['image_name']
-            full_image_path = os.path.join(folder_name, image_name)
-            self.image_dialog = ImageDialog(full_image_path)
+            self.image_dialog = ImageDialog(folder_name)
             self.image_dialog.setWindowModality(Qt.NonModal)
             self.image_dialog.show()
 
