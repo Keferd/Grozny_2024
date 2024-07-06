@@ -22,8 +22,8 @@ df['date_registration'] = pd.to_datetime(df['date_registration'])
 valid_df = group_df(df)
 
 df = df.drop('registrations_id', axis=1)
-base_df = group_df(base.add_registration(df))
-window_df = group_df(sliding_window.add_registration(df))
+base_df = group_df(base(df))
+window_df = group_df(sliding_window(df))
 
 print('base:', compare_grouped_dfs(valid_df, base_df))
 print('window:', compare_grouped_dfs(valid_df, window_df))
