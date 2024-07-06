@@ -10,7 +10,7 @@ from .model_init import detector, classificator, detector_config, device, classi
 
 
 @timeit
-def detection(src_dir: str):
+def detection(src_dir: str, progress_callback=None):
     # Load main config
 
     pathes_to_imgs = [i for i in Path(src_dir).glob("*")
@@ -61,6 +61,8 @@ def detection(src_dir: str):
                             list_predictions.extend([[src_dir, name, cls, prob, creation_time] for name, cls, prob in
                                                      zip(repeat(img_name, len(class_names)), class_names, top_p)])
 
+                if progress_callback:
+                    progress_callback(int((i + 1) / num_packages_det * 100))
 
             return list_predictions
 
