@@ -35,7 +35,7 @@ def open_mapping(path_mapping: str) -> dict[int, str]:
     return dict_map
 
 
-def extract_crops(results: list[Results], config: BaseConfig) -> dict[str, torch.Tensor]:
+def extract_crops(results: list[Results], config: BaseConfig) -> dict[Path, torch.Tensor]:
     dict_crops = {}
     for res_per_img in results:
         if len(res_per_img) > 0:
@@ -54,7 +54,7 @@ def extract_crops(results: list[Results], config: BaseConfig) -> dict[str, torch
                 crop = normalize(crop.float(), mean=MEAN, std=STD)
                 crops_per_img.append(crop)
 
-            dict_crops[Path(res_per_img.path).name] = torch.cat(crops_per_img) # if len(crops_per_img) else None
+            dict_crops[Path(res_per_img.path)] = torch.cat(crops_per_img) # if len(crops_per_img) else None
     return dict_crops
 
 
