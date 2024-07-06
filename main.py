@@ -11,6 +11,8 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
 from ml.detection import get_df_from_predictions, detection
 from registration_algorithms import threshold, base
+from max_count import set_max_count
+from submit import get_submit_dataframe
 
 
 class ImageDialog(QDialog):
@@ -210,10 +212,10 @@ class AnimalRegistrationApp(QWidget):
         self.progress_bar.setValue(0)
         predictions = detection(src_dir=directory, progress_callback=self.update_progress)
         self.df = get_df_from_predictions(list_predictions=predictions)
-        # FIXME add here post processing
-        # print("post processing")
-        # self.df = base(self.df)
-        # print(self.df)
+
+        # Постпроцессинг
+        self.df = base(self.df)
+        self.df = set_max_count(self.df)
 
         self.current_page = 0
         self.display_table()
@@ -271,9 +273,10 @@ class AnimalRegistrationApp(QWidget):
         self.df.iat[row, column] = value
 
     def download_table(self):
-        file_path, _ = QFileDialog.getSaveFileName(self, 'Сохранить файл', '', 'Excel files (*.xlsx)')
+        file_path, _ = QFileDialog.getSaveFileName(self, 'Сохранить файл', '', 'CSV files (*.csv)')
         if file_path:
-            self.df.to_excel(file_path, index=False)
+            self.df = get_submit_dataframe(self.df)
+            self.df.to_csv(file_path, index=False, sep=',')
             QMessageBox.information(self, 'Успех', 'Таблица успешно сохранена.')
 
     def show_image_dialog(self, row, column):

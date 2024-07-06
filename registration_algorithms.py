@@ -4,22 +4,22 @@ from datetime import timedelta
 
 def base(df):
     registration_number = 1
-    first_timestamp = df.loc[0, 'date_registration']
-    current_class = df.loc[0, 'registration_class']
+    first_timestamp = df.loc[0, 'creation_time']
+    current_class = df.loc[0, 'class_name']
 
     df['registrations_id'] = 0
 
     for i in range(len(df)):
-        if df.loc[i, 'registration_class'] != current_class:
-            # Изменился registration_class
+        if df.loc[i, 'class_name'] != current_class:
+            # Изменился class_name
             registration_number += 1
-            current_class = df.loc[i, 'registration_class']
-            first_timestamp = df.loc[i, 'date_registration']
+            current_class = df.loc[i, 'class_name']
+            first_timestamp = df.loc[i, 'creation_time']
 
-        elif df.loc[i, 'date_registration'] - first_timestamp > timedelta(minutes=30):
+        elif df.loc[i, 'creation_time'] - first_timestamp > timedelta(minutes=30):
             # Превышен интервал в 30 минут
             registration_number += 1
-            first_timestamp = df.loc[i, 'date_registration']
+            first_timestamp = df.loc[i, 'creation_time']
 
         # Присваиваем текущий номер регистрации
         df.loc[i, 'registrations_id'] = registration_number
@@ -28,39 +28,39 @@ def base(df):
 
 
 def sliding_window(df, window_size=1, max_interval=timedelta(minutes=30)):
-    # Функция для определения корректного registration_class на основе скользящего окна
+    # Функция для определения корректного class_name на основе скользящего окна
     def get_correct_class(row_index):
         start = max(0, row_index - window_size)
         end = min(len(df), row_index + window_size + 1)
         window = df.iloc[start:end]
 
         # Исключаем записи, которые превышают максимальный интервал
-        window = window[window['date_registration'] - df.loc[row_index, 'date_registration'] <= max_interval]
+        window = window[window['creation_time'] - df.loc[row_index, 'creation_time'] <= max_interval]
 
         if len(window) > 2:
-            most_common_class = window['registration_class'].mode()[0]
+            most_common_class = window['class_name'].mode()[0]
             return most_common_class
-        return df.loc[row_index, 'registration_class']
+        return df.loc[row_index, 'class_name']
 
     # Применяем функцию скользящего окна к каждому ряду
-    df['registration_class'] = df.index.map(get_correct_class)
+    df['class_name'] = df.index.map(get_correct_class)
 
     # Инициализируем первый номер регистрации и первую временную метку
     registration_number = 1
-    first_timestamp = df.loc[0, 'date_registration']
-    current_class = df.loc[0, 'registration_class']
+    first_timestamp = df.loc[0, 'creation_time']
+    current_class = df.loc[0, 'class_name']
 
     df['registrations_id'] = 0
 
     for i in range(len(df)):
-        if df.loc[i, 'registration_class'] != current_class:
+        if df.loc[i, 'class_name'] != current_class:
             registration_number += 1
-            current_class = df.loc[i, 'registration_class']
-            first_timestamp = df.loc[i, 'date_registration']
+            current_class = df.loc[i, 'class_name']
+            first_timestamp = df.loc[i, 'creation_time']
 
-        elif df.loc[i, 'date_registration'] - first_timestamp > max_interval:
+        elif df.loc[i, 'creation_time'] - first_timestamp > max_interval:
             registration_number += 1
-            first_timestamp = df.loc[i, 'date_registration']
+            first_timestamp = df.loc[i, 'creation_time']
 
         df.loc[i, 'registrations_id'] = registration_number
 
@@ -68,70 +68,68 @@ def sliding_window(df, window_size=1, max_interval=timedelta(minutes=30)):
 
 
 def threshold(df, confidence_threshold=0.8, max_interval=timedelta(minutes=30)):
-    df = df.sort_values(by=['date_registration']).reset_index(drop=True)
+    df = df.sort_values(by=['creation_time']).reset_index(drop=True)
 
     registration_number = 1
-    first_timestamp = df.loc[0, 'date_registration']
-    current_class = df.loc[0, 'registration_class']
+    first_timestamp = df.loc[0, 'creation_time']
+    current_class = df.loc[0, 'class_name']
 
     df['registrations_id'] = 0
 
     for i in range(len(df)):
-        if df.loc[i, 'registration_class'] != current_class and df.loc[i, 'confidence'] >= confidence_threshold:
+        if df.loc[i, 'class_name'] != current_class and df.loc[i, 'confidence'] >= confidence_threshold:
             registration_number += 1
-            current_class = df.loc[i, 'registration_class']
-            first_timestamp = df.loc[i, 'date_registration']
+            current_class = df.loc[i, 'class_name']
+            first_timestamp = df.loc[i, 'creation_time']
 
-        elif df.loc[i, 'date_registration'] - first_timestamp > max_interval:
+        elif df.loc[i, 'creation_time'] - first_timestamp > max_interval:
             registration_number += 1
-            first_timestamp = df.loc[i, 'date_registration']
+            first_timestamp = df.loc[i, 'creation_time']
 
         df.loc[i, 'registrations_id'] = registration_number
-        df.loc[i, 'flag'] = df.loc[i, 'date_registration'] - first_timestamp
 
     return df
 
 
 def sliding_window_and_treshold(df, window_size=2, max_interval=timedelta(minutes=30)):
-    # Функция для определения корректного registration_class на основе скользящего окна и уверенности
+    # Функция для определения корректного class_name на основе скользящего окна и уверенности
     def get_correct_class(row_index):
         start = max(0, row_index - window_size)
         end = min(len(df), row_index + window_size + 1)
         window = df.iloc[start:end]
 
         # Исключаем записи, которые превышают максимальный интервал
-        window = window[window['date_registration'] - df.loc[row_index, 'date_registration'] <= max_interval]
+        window = window[window['creation_time'] - df.loc[row_index, 'creation_time'] <= max_interval]
 
         if len(window) > 0:
-            weighted_classes = window.groupby('registration_class')['confidence'].sum()
+            weighted_classes = window.groupby('class_name')['confidence'].sum()
             most_confident_class = weighted_classes.idxmax()
             return most_confident_class
-        return df.loc[row_index, 'registration_class']
+        return df.loc[row_index, 'class_name']
 
     # Применяем функцию скользящего окна к каждому ряду
-    df['registration_class'] = df.index.map(get_correct_class)
+    df['class_name'] = df.index.map(get_correct_class)
 
     # Инициализируем первый номер регистрации и первую временную метку
     registration_number = 1
-    first_timestamp = df.loc[0, 'date_registration']
-    current_class = df.loc[0, 'registration_class']
+    first_timestamp = df.loc[0, 'creation_time']
+    current_class = df.loc[0, 'class_name']
 
     # Создаем пустые столбцы для регистрации и продолжительности регистрации
     df['registrations_id'] = 0
 
     # Проходим по каждой строке DataFrame
     for i in range(len(df)):
-        if df.loc[i, 'registration_class'] != current_class:
+        if df.loc[i, 'class_name'] != current_class:
             registration_number += 1
-            current_class = df.loc[i, 'registration_class']
-            first_timestamp = df.loc[i, 'date_registration']
+            current_class = df.loc[i, 'class_name']
+            first_timestamp = df.loc[i, 'creation_time']
 
-        elif df.loc[i, 'date_registration'] - first_timestamp > max_interval:
+        elif df.loc[i, 'creation_time'] - first_timestamp > max_interval:
             registration_number += 1
-            first_timestamp = df.loc[i, 'date_registration']
+            first_timestamp = df.loc[i, 'creation_time']
 
         df.loc[i, 'registrations_id'] = registration_number
-        df.loc[i, 'flag'] = df.loc[i, 'date_registration'] - first_timestamp
 
     return df
 
@@ -140,9 +138,9 @@ if __name__ == "__main__":
     # Пример использования
     data = {
         'name': ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15'],
-        'registration_class': ['cat', 'cat', 'dog', 'cat', 'cat', 'cat', 'cat', 'dog', 'cat', 'cat', 'dog', 'cat',
+        'class_name': ['cat', 'cat', 'dog', 'cat', 'cat', 'cat', 'cat', 'dog', 'cat', 'cat', 'dog', 'cat',
                                'dog', 'cat', 'cat'],
-        'date_registration': [
+        'creation_time': [
             '2023-07-01 09:00:00',
             '2023-07-01 09:05:00',
             '2023-07-01 09:06:00',
@@ -163,7 +161,7 @@ if __name__ == "__main__":
     }
 
     df = pd.DataFrame(data)
-    df['date_registration'] = pd.to_datetime(df['date_registration'])
+    df['creation_time'] = pd.to_datetime(df['creation_time'])
 
     df = sliding_window_and_treshold(df)
     print(df)
