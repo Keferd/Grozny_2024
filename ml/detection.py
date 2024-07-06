@@ -69,7 +69,7 @@ def detection(src_dir: str, progress_callback=None):
 def get_df_from_predictions(list_predictions: list) -> pd.DataFrame:
     table = pd.DataFrame(list_predictions, columns=["image_name", "folder_name", "class_name", "confidence", "creation_time"])
     table['creation_time'] = pd.to_datetime(table['creation_time'], format='%Y:%m:%d %H:%M:%S', errors='coerce')
-    print("---------TABLE\n", table)
+
 
     agg_functions = {
         'class_name': ['count'],
@@ -95,6 +95,6 @@ def get_df_from_predictions(list_predictions: list) -> pd.DataFrame:
             final_res.extend(statistic_by_max_objects.reset_index().values)
 
     final_table = pd.DataFrame(final_res, columns=["image_name", "folder_name", "class_name", "creation_time", "count", "confidence"])
-    print("---------FINAL TABLE\n", final_table)
+
     return final_table
 
