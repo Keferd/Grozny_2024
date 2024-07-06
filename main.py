@@ -5,10 +5,13 @@ from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QLineEdit, QPushButt
                              QHBoxLayout, QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem,
                              QHeaderView, QGridLayout, QSizePolicy, QSpacerItem, QProgressBar,
                              QDialog)
-from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem, QHeaderView)
+from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout,
+                             QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem, QHeaderView)
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
 from ml.detection import get_df_from_predictions, detection
+from registration_algorithms import threshold, base
+
 
 class ImageDialog(QDialog):
     def __init__(self, image_path):
@@ -92,31 +95,26 @@ class AnimalRegistrationApp(QWidget):
         self.directory_path.setMinimumWidth(220)  # Adjust width as needed
         self.directory_path.setFixedHeight(30)
 
-
         # Browse button
         browse_button = QPushButton('...', self)
         browse_button.setFixedWidth(30)  # Set fixed width for browse_button
         browse_button.setFixedHeight(30)
         browse_button.clicked.connect(self.browse_directory)
 
-
         # run buttton
         run_button = QPushButton('Запустить', self)
         run_button.setMinimumWidth(100)  # Adjust minimum width as needed
         run_button.clicked.connect(self.process_data)
-
 
         # Spacer
         spacer = QWidget()
         spacer.setFixedSize(260, 3)
         spacer.setStyleSheet("background-color: #FFFFFF;")
 
-
         # Spacer bottom
         spacer_bottom = QWidget()
         spacer_bottom.setFixedSize(260, 40)
         spacer_bottom.setObjectName("spacer_bottom")
-
 
         # Download button
         self.download_button = QPushButton('Скачать таблицу', self)
@@ -125,7 +123,6 @@ class AnimalRegistrationApp(QWidget):
         self.download_button.setFixedWidth(150)
         self.download_button.setCursor(Qt.PointingHandCursor)
         self.download_button.clicked.connect(self.download_table)
-        
 
         # Horizontal layout for directory_path and browse_button
         directory_layout = QHBoxLayout()
@@ -166,8 +163,6 @@ class AnimalRegistrationApp(QWidget):
         sidebar_layout.addLayout(pagination_layout)
         sidebar_layout.addWidget(self.progress_bar)
 
-
-
         # Sidebar widget
         sidebar_widget = QWidget()
         sidebar_widget.setObjectName("sidebar")
@@ -181,14 +176,12 @@ class AnimalRegistrationApp(QWidget):
         self.table.itemChanged.connect(self.update_dataframe)
         self.table.cellClicked.connect(self.show_image_dialog)
 
-
         # Main inner layout for sidebar and table
         main_inner_layout = QHBoxLayout()
         main_inner_layout.setContentsMargins(0, 0, 0, 0)
         main_inner_layout.setSpacing(0)
         main_inner_layout.addWidget(sidebar_widget)
         main_inner_layout.addWidget(self.table)
-
 
         # Main layout for sidebar and table
         main_layout = QVBoxLayout(self)
@@ -203,13 +196,11 @@ class AnimalRegistrationApp(QWidget):
         # Final
         self.setLayout(main_layout)
 
-
-
     def browse_directory(self):
         directory = QFileDialog.getExistingDirectory(self, 'Выберите директорию')
         if directory:
             self.directory_path.setText(directory)
-    
+
     def process_data(self):
         directory = self.directory_path.text()
         if not directory:
@@ -220,6 +211,9 @@ class AnimalRegistrationApp(QWidget):
         predictions = detection(src_dir=directory, progress_callback=self.update_progress)
         self.df = get_df_from_predictions(list_predictions=predictions)
         # FIXME add here post processing
+        # print("post processing")
+        # self.df = base(self.df)
+        # print(self.df)
 
         self.current_page = 0
         self.display_table()

@@ -8,7 +8,6 @@ def base(df):
     current_class = df.loc[0, 'registration_class']
 
     df['registrations_id'] = 0
-    df['flag'] = timedelta(0)
 
     for i in range(len(df)):
         if df.loc[i, 'registration_class'] != current_class:
@@ -52,7 +51,6 @@ def sliding_window(df, window_size=1, max_interval=timedelta(minutes=30)):
     current_class = df.loc[0, 'registration_class']
 
     df['registrations_id'] = 0
-    df['flag'] = timedelta(0)
 
     for i in range(len(df)):
         if df.loc[i, 'registration_class'] != current_class:
@@ -77,7 +75,6 @@ def threshold(df, confidence_threshold=0.8, max_interval=timedelta(minutes=30)):
     current_class = df.loc[0, 'registration_class']
 
     df['registrations_id'] = 0
-    df['flag'] = timedelta(0)
 
     for i in range(len(df)):
         if df.loc[i, 'registration_class'] != current_class and df.loc[i, 'confidence'] >= confidence_threshold:
@@ -121,7 +118,6 @@ def sliding_window_and_treshold(df, window_size=2, max_interval=timedelta(minute
 
     # Создаем пустые столбцы для регистрации и продолжительности регистрации
     df['registrations_id'] = 0
-    df['flag'] = timedelta(0)
 
     # Проходим по каждой строке DataFrame
     for i in range(len(df)):
