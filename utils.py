@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 from datetime import datetime, timedelta
 
 
@@ -26,3 +27,13 @@ def set_max_count(df):
     result_df = pd.merge(df, max_counts, on='registrations_id', how='left')
 
     return result_df
+
+
+def get_folder_name(root_path, file_path, filename):
+    file_path_without_filename = file_path.replace('\\' + filename, '')
+    folder_name = os.path.relpath(file_path_without_filename, root_path)
+
+    if folder_name == "":
+        folder_name = filename
+
+    return folder_name

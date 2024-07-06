@@ -6,7 +6,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
 from ml.detection import get_df_from_predictions, detection
 from registration_algorithms import threshold, base
-from utils import set_max_count, set_duration
+from utils import set_max_count, set_duration, get_folder_name
 from submit import get_submit_dataframe
 
 
@@ -213,6 +213,8 @@ class AnimalRegistrationApp(QWidget):
         self.df = set_max_count(self.df)
         self.df = set_duration(self.df)
 
+        self.df['folder_name'] = self.df.apply(lambda row: get_folder_name(directory, row['folder_name'], row['image_name']), axis=1)
+
         self.current_page = 0
         self.display_table()
         self.download_button.setEnabled(True)
@@ -271,8 +273,10 @@ class AnimalRegistrationApp(QWidget):
 
     def show_image_dialog(self, row, column):
         if column == self.df.columns.get_loc('image_name'):
-            folder_name = self.df.iloc[row]['folder_name']
-            self.image_dialog = ImageDialog(folder_name)
+            image_name = self.df.iloc[row]['image_name']
+            directory_path = self.directory_path.text()
+            image_path = f"{directory_path}/{image_name}"
+            self.image_dialog = ImageDialog(image_path)
             self.image_dialog.setWindowModality(Qt.NonModal)
             self.image_dialog.show()
 
