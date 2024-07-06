@@ -1,6 +1,5 @@
 import pandas as pd
-import base
-import window
+from registration_algorithms import base, window
 
 
 def compare_grouped_dfs(valid_df, alg_df):
