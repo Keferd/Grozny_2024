@@ -2,8 +2,8 @@ import pandas as pd
 from datetime import timedelta
 
 
-def add_registration(df, window_size=1, max_interval=timedelta(minutes=30)):
-    # Функция для определения корректного registration_class на основе скользящего окна
+def add_registration(df, window_size=2, max_interval=timedelta(minutes=30)):
+    # Функция для определения корректного registration_class на основе скользящего окна и уверенности
     def get_correct_class(row_index):
         start = max(0, row_index - window_size)
         end = min(len(df), row_index + window_size + 1)
@@ -12,9 +12,10 @@ def add_registration(df, window_size=1, max_interval=timedelta(minutes=30)):
         # Исключаем записи, которые превышают максимальный интервал
         window = window[window['date_registration'] - df.loc[row_index, 'date_registration'] <= max_interval]
 
-        if len(window) > 2:
-            most_common_class = window['registration_class'].mode()[0]
-            return most_common_class
+        if len(window) > 0:
+            weighted_classes = window.groupby('registration_class')['confidence'].sum()
+            most_confident_class = weighted_classes.idxmax()
+            return most_confident_class
         return df.loc[row_index, 'registration_class']
 
     # Применяем функцию скользящего окна к каждому ряду
@@ -25,9 +26,11 @@ def add_registration(df, window_size=1, max_interval=timedelta(minutes=30)):
     first_timestamp = df.loc[0, 'date_registration']
     current_class = df.loc[0, 'registration_class']
 
+    # Создаем пустые столбцы для регистрации и продолжительности регистрации
     df['registrations_id'] = 0
     df['flag'] = timedelta(0)
 
+    # Проходим по каждой строке DataFrame
     for i in range(len(df)):
         if df.loc[i, 'registration_class'] != current_class:
             registration_number += 1
@@ -39,6 +42,7 @@ def add_registration(df, window_size=1, max_interval=timedelta(minutes=30)):
             first_timestamp = df.loc[i, 'date_registration']
 
         df.loc[i, 'registrations_id'] = registration_number
+        df.loc[i, 'flag'] = df.loc[i, 'date_registration'] - first_timestamp
 
     return df
 
@@ -65,7 +69,8 @@ if __name__ == "__main__":
             '2023-07-03 10:06:00',
             '2023-07-03 10:07:00',
             '2023-07-03 10:09:00'
-        ]
+        ],
+        'confidence': [0.8, 0.8, 0.9, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8,]
     }
 
     df = pd.DataFrame(data)
@@ -73,3 +78,4 @@ if __name__ == "__main__":
 
     df = add_registration(df)
     print(df)
+
