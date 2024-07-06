@@ -272,8 +272,6 @@ class AnimalRegistrationApp(QWidget):
         self.df = set_max_count(self.df)
         self.df = set_duration(self.df)
 
-        self.df['folder_name'] = self.df["folder_name"].apply(get_folder_name)
-
         self.current_page = 0
         self.display_table()
         self.download_button.setEnabled(True)
@@ -351,10 +349,8 @@ class AnimalRegistrationApp(QWidget):
 
     def show_image_dialog(self, row, column):
         if column == self.df.columns.get_loc('image_name'):
-            image_name = self.df.iloc[row]['image_name']
-            directory_path = self.directory_path.text()
-            image_path = f"{directory_path}/{image_name}"
-            self.image_dialog = ImageDialog(image_path)
+            folder_name = self.df.iloc[row]['folder_name']
+            self.image_dialog = ImageDialog(folder_name)
             self.image_dialog.setWindowModality(Qt.NonModal)
             self.image_dialog.show()
 
