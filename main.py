@@ -17,10 +17,9 @@ class ImageDialog(QDialog):
         self.label = QLabel()
 
         pixmap = QPixmap(image_path)
-        # Calculate the size based on a percentage of the screen size
         screen = QApplication.primaryScreen()
         screen_size = screen.size()
-        relative_width = int(screen_size.width() * 0.5)  # Adjust as needed
+        relative_width = int(screen_size.width() * 0.5)
         scaled_pixmap = pixmap.scaledToWidth(relative_width, Qt.SmoothTransformation)
 
         self.label.setPixmap(scaled_pixmap)
@@ -36,7 +35,6 @@ class AnimalRegistrationApp(QWidget):
     def initUI(self):
         self.setWindowTitle('Формирование регистраций животных')
         self.setGeometry(100, 100, 1000, 700)
-
         self.setStyleSheet("""
             QWidget {
                 background-color: #E8F5E9;
@@ -69,11 +67,6 @@ class AnimalRegistrationApp(QWidget):
             }
         """)
 
-        self.current_page = 0
-        self.rows_per_page = 100
-
-        layout = QGridLayout()
-
         title_label = QLabel('Формирование регистраций животных', self)
         title_label.setAlignment(Qt.AlignCenter)
 
@@ -90,6 +83,23 @@ class AnimalRegistrationApp(QWidget):
         self.download_button.setObjectName("downloadButton")
         self.download_button.clicked.connect(self.download_table)
 
+        self.table = QTableWidget(self)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.table.cellClicked.connect(self.show_image_dialog)
+
+        self.current_page = 0
+        self.rows_per_page = 100
+
+        self.prev_button = QPushButton('Назад', self)
+        self.prev_button.clicked.connect(self.prev_page)
+        self.prev_button.setEnabled(False)
+        self.next_button = QPushButton('Вперед', self)
+        self.next_button.clicked.connect(self.next_page)
+        self.next_button.setEnabled(False)
+
+        self.progress_bar = QProgressBar(self)
+        self.progress_bar.setValue(0)
+
         dir_layout = QHBoxLayout()
         dir_layout.addWidget(QLabel('Выберите директорию:'))
         dir_layout.addWidget(self.directory_path)
@@ -99,29 +109,17 @@ class AnimalRegistrationApp(QWidget):
         button_layout.addWidget(run_button)
         button_layout.addWidget(self.download_button)
 
-        self.table = QTableWidget(self)
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self.table.cellClicked.connect(self.show_image_dialog)
-
         pagination_layout = QHBoxLayout()
-        self.prev_button = QPushButton('Назад', self)
-        self.prev_button.clicked.connect(self.prev_page)
-        self.prev_button.setEnabled(False)
-        self.next_button = QPushButton('Вперед', self)
-        self.next_button.clicked.connect(self.next_page)
-        self.next_button.setEnabled(False)
         pagination_layout.addItem(QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
         pagination_layout.addWidget(self.prev_button)
         pagination_layout.addWidget(self.next_button)
 
+        layout = QGridLayout()
         layout.addWidget(title_label, 0, 0, 1, 3)
         layout.addLayout(dir_layout, 1, 0, 1, 3)
         layout.addLayout(button_layout, 2, 0, 1, 3)
         layout.addWidget(self.table, 3, 0, 1, 3)
         layout.addLayout(pagination_layout, 4, 0, 1, 3)
-
-        self.progress_bar = QProgressBar(self)
-        self.progress_bar.setValue(0)
         layout.addWidget(self.progress_bar, 5, 0, 1, 3)
 
         self.setLayout(layout)
