@@ -46,13 +46,6 @@ class AnimalRegistrationApp(QWidget):
                 background-color: #FFFFFF;
                 border: none;
             }
-            #header {
-                background-color: #68A069;
-                color: white;
-                font-size: 20px;
-                font-weight: bold;
-                padding: 10px 30px; /* Left padding adjusted */
-            }
             #sidebar {
                 background-color: #B4D0B4;
                 padding: 10px;
@@ -66,62 +59,43 @@ class AnimalRegistrationApp(QWidget):
             #spacer_bottom {
                 background-color: none;
             }
-            #footer {
-                background-color: #68A069;
-                color: #345835;
-                font-size: 14px;
-                font-weight: bold;
-                text-align: right;
-                padding: 10px;
-            }
         """)
 
-        main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(0)
 
-        # Header
-        header = QLabel('Формирование регистраций животных', self)
-        header.setObjectName("header")
-        # main_layout.addWidget(header)
-
-        # Main layout for sidebar and table
-        main_inner_layout = QHBoxLayout()
-        main_inner_layout.setContentsMargins(0, 0, 0, 0)
-        main_inner_layout.setSpacing(0)
-
-        # Sidebar layout
-        sidebar_layout = QVBoxLayout()
-        sidebar_layout.setContentsMargins(20, 20, 20, 20)
-        sidebar_layout.setSpacing(10)
-
-        sidebar_widget = QWidget()
-        sidebar_widget.setObjectName("sidebar")
-        sidebar_widget.setLayout(sidebar_layout)
-
+        
+        # Directory path
         self.directory_path = QLineEdit(self)
         self.directory_path.setPlaceholderText("Директория...")
         self.directory_path.setMinimumWidth(220)  # Adjust width as needed
         self.directory_path.setFixedHeight(30)
         
+
+        # Browse button
         browse_button = QPushButton('...', self)
         browse_button.setFixedWidth(30)  # Set fixed width for browse_button
         browse_button.setFixedHeight(30)
         browse_button.clicked.connect(self.browse_directory)
         
+
+        # run buttton
         run_button = QPushButton('Запустить', self)
         run_button.setMinimumWidth(100)  # Adjust minimum width as needed
         run_button.clicked.connect(self.process_data)
 
+
+        # Spacer
         spacer = QWidget()
         spacer.setFixedSize(260, 3)
         spacer.setStyleSheet("background-color: #FFFFFF;")
 
-        # Spacer with 40 pixels height
+
+        # Spacer bottom
         spacer_bottom = QWidget()
         spacer_bottom.setFixedSize(260, 40)
         spacer_bottom.setObjectName("spacer_bottom")
         
+
+        # Download button
         self.download_button = QPushButton('Скачать таблицу', self)
         self.download_button.setEnabled(False)
         self.download_button.setObjectName("downloadButton")
@@ -129,7 +103,6 @@ class AnimalRegistrationApp(QWidget):
         self.download_button.setCursor(Qt.PointingHandCursor)
         self.download_button.clicked.connect(self.download_table)
         
-        sidebar_layout.addWidget(QLabel('Выберите директорию:'))
         
         # Horizontal layout for directory_path and browse_button
         directory_layout = QHBoxLayout()
@@ -137,36 +110,54 @@ class AnimalRegistrationApp(QWidget):
         directory_layout.addWidget(browse_button)
         directory_layout.addStretch(1)
         
+
+        # Sidebar layout
+        sidebar_layout = QVBoxLayout()
+        sidebar_layout.setContentsMargins(20, 20, 20, 20)
+        sidebar_layout.setSpacing(10)
+        sidebar_layout.addWidget(QLabel('Выберите директорию:'))
         sidebar_layout.addLayout(directory_layout)
-        
-        # Add margin above the run_button
         sidebar_layout.addSpacing(20)  # Adjust spacing as needed
-        
         sidebar_layout.addWidget(run_button)
         sidebar_layout.addWidget(spacer)
         sidebar_layout.addWidget(spacer_bottom)
         sidebar_layout.addWidget(self.download_button)
         sidebar_layout.addStretch(1)
 
+
+        # Sidebar widget
+        sidebar_widget = QWidget()
+        sidebar_widget.setObjectName("sidebar")
+        sidebar_widget.setLayout(sidebar_layout)
         sidebar_widget.setMaximumWidth(300)
-        main_inner_layout.addWidget(sidebar_widget)
+
 
         # Table view
         self.table = QTableWidget(self)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.table.setContentsMargins(0, 0, 0, 0)
         self.table.itemChanged.connect(self.update_dataframe)
+
+
+        # Main inner layout for sidebar and table
+        main_inner_layout = QHBoxLayout()
+        main_inner_layout.setContentsMargins(0, 0, 0, 0)
+        main_inner_layout.setSpacing(0)
+        main_inner_layout.addWidget(sidebar_widget)
         main_inner_layout.addWidget(self.table)
 
+
+        # Main layout for sidebar and table
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
         main_layout.addLayout(main_inner_layout)
 
-        # Footer
-        # footer = QLabel('Это база', self)
-        # footer.setObjectName("footer")
-        # footer.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        # main_layout.addWidget(footer)
 
+        # Final
         self.setLayout(main_layout)
+
+
 
     def browse_directory(self):
         directory = QFileDialog.getExistingDirectory(self, 'Выберите директорию')
