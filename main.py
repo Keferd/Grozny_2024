@@ -1,17 +1,12 @@
 import sys
-import os
-import pandas as pd
-from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout,
-                             QHBoxLayout, QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem,
-                             QHeaderView, QGridLayout, QSizePolicy, QSpacerItem, QProgressBar,
-                             QDialog)
 from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout,
-                             QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem, QHeaderView)
+                             QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem, QHeaderView, QSizePolicy,
+                             QSpacerItem, QProgressBar, QDialog)
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
 from ml.detection import get_df_from_predictions, detection
 from registration_algorithms import threshold, base
-from max_count import set_max_count
+from utils import set_max_count, set_duration
 from submit import get_submit_dataframe
 
 
@@ -216,12 +211,12 @@ class AnimalRegistrationApp(QWidget):
         # Постпроцессинг
         self.df = base(self.df)
         self.df = set_max_count(self.df)
+        self.df = set_duration(self.df)
 
         self.current_page = 0
         self.display_table()
         self.download_button.setEnabled(True)
         self.update_pagination_buttons()
-
 
     def update_progress(self, value):
         self.progress_bar.setValue(value)
