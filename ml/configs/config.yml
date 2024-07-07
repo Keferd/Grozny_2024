@@ -1,0 +1,20 @@
+src_dir: "data"
+mapping: "ml//class_map_animal.txt"
+device: cuda
+dst_save_table: "data/table.csv"
+
+detector:
+  weights: "ml//weights/detection/yolov8n.pt"
+  batch_size: 16
+  iou: 0.45
+  conf: 0.4
+  imgsz:
+    - 640
+    - 640
+
+classificator:
+  weights: "ml//weights/classification/efficientnet_b0.pt"
+  batch_size: 16
+  imgsz:
+    - 288
+    - 288
