@@ -278,6 +278,7 @@ class AnimalRegistrationApp(QWidget):
         self.df = base(self.df)
         self.df = set_max_count(self.df)
         self.df = set_duration(self.df)
+        # self.df.drop(columns=["class_name"], inplace=True)
 
         self.current_page = 0
         self.display_table()
@@ -287,9 +288,12 @@ class AnimalRegistrationApp(QWidget):
 
     def recalculation_data(self):
         
-        # self.df = base(self.df)
-        # self.df = set_max_count(self.df)
-        # self.df = set_duration(self.df)
+        self.df = self.df.drop("max_count", axis=1)
+        self.df = self.df.drop("duration", axis=1)
+        self.df = self.df.drop("registrations_id", axis=1)
+        self.df = base(self.df)
+        self.df = set_max_count(self.df)
+        self.df = set_duration(self.df)
         
         self.current_page = 0
         self.display_table()
