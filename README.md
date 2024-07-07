@@ -2,8 +2,6 @@
 
 Структура проекта:
 
-- **flaskapp/**
-  - Project front-end
 - **main.py**
   - Файл запуска приложения.
 - **requirements.txt**
@@ -18,12 +16,10 @@
 - **pip install virtualenv**
 - **pip install virtualenvwrapper-win**
 3. Создайте изолированную среду в Python 
-- **python3 -m venv venv**
+- **python -m venv venv**
 4. Активируйте созданную виртуальную среду
 - **venv\Scripts\activate** или **venv\Scripts\activate.bat**
 5. Установите необходимые зависимости, выполнив следующую команду:
 - **pip install -r requirements.txt**
 6. Запустите приложение, выполнив следующую команду:
 - **python main.py**
-   
-После этого ваше приложение будет доступно по адресу http://127.0.0.1:8000/
