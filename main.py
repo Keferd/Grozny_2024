@@ -352,7 +352,8 @@ class AnimalRegistrationApp(QWidget):
 
     def show_image_dialog(self, row, column):
         if column == self.df.columns.get_loc('image_name'):
-            folder_name = self.df.iloc[row]['folder_name']
+            actual_row = row + self.current_page * self.rows_per_page  # Вычисляем фактический индекс строки
+            folder_name = self.df.iloc[actual_row]['folder_name']  # Используем фактический индекс для получения данных
             self.image_dialog = ImageDialog(str(folder_name))
             self.image_dialog.setWindowModality(Qt.NonModal)
             self.image_dialog.show()
