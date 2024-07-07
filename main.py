@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QLineEdit, QPushButt
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap, QFontDatabase, QIcon
 from ml.detection import get_df_from_predictions, detection
-from registration_algorithms import threshold, base
+from registration_algorithms import threshold, base, distribution_method
 from utils import set_max_count, set_duration, get_folder_name
 from submit import get_submit_dataframe
 
@@ -268,7 +268,7 @@ class AnimalRegistrationApp(QWidget):
         self.df = get_df_from_predictions(list_predictions=predictions)
 
         # Постпроцессинг
-        self.df = base(self.df)
+        self.df = threshold(self.df)
         self.df = set_max_count(self.df)
         self.df = set_duration(self.df)
 
@@ -283,7 +283,7 @@ class AnimalRegistrationApp(QWidget):
         self.df = self.df.drop("max_count", axis=1)
         self.df = self.df.drop("duration", axis=1)
         self.df = self.df.drop("registrations_id", axis=1)
-        self.df = base(self.df)
+        self.df = threshold(self.df)
         self.df = set_max_count(self.df)
         self.df = set_duration(self.df)
         

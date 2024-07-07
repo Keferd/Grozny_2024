@@ -73,7 +73,7 @@ def sliding_window(df, window_size=1, max_interval=timedelta(minutes=30)):
     return df
 
 
-def threshold(df, confidence_threshold=0.8, max_interval=timedelta(minutes=30)):
+def threshold(df, confidence_threshold=0.9, max_interval=timedelta(minutes=30)):
 
     registration_number = 1
     first_timestamp = df.loc[0, 'creation_time']
@@ -156,8 +156,11 @@ def distribution_method(df: pd.DataFrame) -> pd.DataFrame:
     df.loc[0, 'registrations_id'] = registration_number
 
     for i in range(1, len(df)):
-        time_delta = df.loc[i, 'creation_time'] - first_timestamp
-        time_delta_seconds = time_delta.total_seconds()
+        time_delta = abs(df.loc[i, 'creation_time'] - first_timestamp)
+        time_delta_seconds = min(time_delta.total_seconds(),1000)
+        print(i, ":")
+        print(time_delta)
+        print(time_delta_seconds)
 
         if time_delta > timedelta(minutes=30):
             # Превышен интервал в 30 минут
