@@ -74,7 +74,6 @@ def sliding_window(df, window_size=1, max_interval=timedelta(minutes=30)):
 
 
 def threshold(df, confidence_threshold=0.8, max_interval=timedelta(minutes=30)):
-    df = df.sort_values(by=['creation_time']).reset_index(drop=True)
 
     registration_number = 1
     first_timestamp = df.loc[0, 'creation_time']
