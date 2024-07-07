@@ -12,8 +12,8 @@ def convert_to_datetime(seconds):
 
 def set_duration(df):
     time_bounds = df.groupby('registrations_id')['creation_time'].agg(['min', 'max']).reset_index()
-    time_bounds['duration_seconds'] = (time_bounds['max'] - time_bounds['min']).dt.total_seconds()
-    time_bounds['duration'] = time_bounds['duration_seconds'].apply(lambda x: convert_to_datetime(x).strftime("%M:%S"))
+    time_bounds['duration'] = (time_bounds['max'] - time_bounds['min']).dt.total_seconds()
+    # time_bounds['duration'] = time_bounds['duration_seconds'].apply(lambda x: convert_to_datetime(x).strftime("%M:%S"))
 
     result_df = pd.merge(df, time_bounds[['registrations_id', 'duration']], on='registrations_id', how='left')
 
