@@ -1,23 +1,18 @@
 import sys
 import os
+from pathlib import Path
 import pandas as pd
 
-from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout,
-                             QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem, QHeaderView, QSizePolicy,
-                             QSpacerItem, QProgressBar, QDialog)
 from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout,
                              QHBoxLayout, QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem,
                              QHeaderView, QGridLayout, QSizePolicy, QSpacerItem, QProgressBar,
                              QDialog)
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QFontDatabase, QIcon
 from ml.detection import get_df_from_predictions, detection
 from registration_algorithms import threshold, base
-from utils import set_max_count, set_duration
+from utils import set_max_count, set_duration, get_folder_name
 from submit import get_submit_dataframe
-
-from PyQt5.QtGui import QFontDatabase
-from PyQt5.QtGui import QIcon
 
 
 class ImageDialog(QDialog):
@@ -139,14 +134,12 @@ class AnimalRegistrationApp(QWidget):
         spacer.setFixedSize(260, 3)
         spacer.setStyleSheet("background-color: #FFFFFF;")
 
-
         # recalculation buttton
         self.recalculation_button = QPushButton('Пересчитать', self)
         self.recalculation_button.setEnabled(False)
         self.recalculation_button.setMinimumWidth(100)  # Adjust minimum width as needed
         self.recalculation_button.setCursor(Qt.PointingHandCursor)
         self.recalculation_button.clicked.connect(self.recalculation_data)
-
 
         # Spacer bottom
         spacer_bottom = QWidget()
@@ -213,7 +206,7 @@ class AnimalRegistrationApp(QWidget):
         sidebar_layout.addWidget(spacer)
         sidebar_layout.addWidget(self.recalculation_button)
         sidebar_layout.addWidget(spacer_bottom)
-        sidebar_layout.addLayout(download_button_layout) 
+        sidebar_layout.addLayout(download_button_layout)
         sidebar_layout.addStretch(1)
         sidebar_layout.addWidget(self.progress_bar)
 
@@ -278,7 +271,6 @@ class AnimalRegistrationApp(QWidget):
         self.df = base(self.df)
         self.df = set_max_count(self.df)
         self.df = set_duration(self.df)
-        # self.df.drop(columns=["class_name"], inplace=True)
 
         self.current_page = 0
         self.display_table()
@@ -298,15 +290,6 @@ class AnimalRegistrationApp(QWidget):
         self.current_page = 0
         self.display_table()
         self.update_pagination_buttons()
-
-
-    def show_image(self, row, column):
-        if column == self.df.columns.get_loc("image_name"):
-            folder_name = self.df.iloc[row]['folder_name']
-            image_name = self.df.iloc[row]['image_name']
-            full_image_path = os.path.join(folder_name, image_name)
-
-
 
     def update_progress(self, value):
         self.progress_bar.setValue(value)
@@ -333,7 +316,7 @@ class AnimalRegistrationApp(QWidget):
 
         # self.table.resizeColumnsToContents()
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
-        
+
         self.table.blockSignals(False)
 
     def update_pagination_buttons(self):
@@ -363,16 +346,17 @@ class AnimalRegistrationApp(QWidget):
     def download_table(self):
         file_path, _ = QFileDialog.getSaveFileName(self, 'Сохранить файл', '', 'CSV files (*.csv)')
         if file_path:
-            self.df = get_submit_dataframe(self.df)
-            self.df.to_csv(file_path, index=False, sep=',')
+            result_df = get_submit_dataframe(self.df)
+            result_df.to_csv(file_path, index=False, sep=',')
             QMessageBox.information(self, 'Успех', 'Таблица успешно сохранена.')
 
     def show_image_dialog(self, row, column):
         if column == self.df.columns.get_loc('image_name'):
             folder_name = self.df.iloc[row]['folder_name']
-            self.image_dialog = ImageDialog(folder_name)
+            self.image_dialog = ImageDialog(str(folder_name))
             self.image_dialog.setWindowModality(Qt.NonModal)
             self.image_dialog.show()
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

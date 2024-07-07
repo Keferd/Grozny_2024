@@ -1,6 +1,7 @@
 import pandas as pd
+import os
 from datetime import datetime, timedelta
-
+from pathlib import Path
 
 def convert_to_datetime(seconds):
     delta = timedelta(seconds=seconds)
@@ -26,3 +27,7 @@ def set_max_count(df):
     result_df = pd.merge(df, max_counts, on='registrations_id', how='left')
 
     return result_df
+
+
+def get_folder_name(path):
+    return Path(path).parent.name

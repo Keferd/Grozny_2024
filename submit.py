@@ -1,4 +1,6 @@
+from utils import get_folder_name
 def get_submit_dataframe(df):
+    df["folder_name"] = df["folder_name"].apply(lambda row: get_folder_name(path=row))
     df = df.groupby('registrations_id').agg(
         name_folder=('folder_name', 'first'),
         class_name=('class_name', 'first'),

@@ -141,7 +141,7 @@ def sliding_window_and_treshold(df, window_size=2, max_interval=timedelta(minute
     return df
 
 
-def calculate_probability(time_delta_seconds, initial_probability=1.0, lambda_=0.003):
+def calculate_probability(time_delta_seconds, initial_probability=1.0, lambda_=0.001):
     probability = 1 - initial_probability * math.exp(-lambda_ * time_delta_seconds)
     return probability
 
