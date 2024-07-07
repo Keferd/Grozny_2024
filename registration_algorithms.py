@@ -160,18 +160,18 @@ def distribution_method(df: pd.DataFrame) -> pd.DataFrame:
         time_delta = df.loc[i, 'creation_time'] - first_timestamp
         time_delta_seconds = time_delta.total_seconds()
 
-        probability = calculate_probability(time_delta_seconds)
-        random_value = random.random()
-
-        if df.loc[i, 'class_name'] != current_class and random_value < probability:
-            registration_number += 1
-            current_class = df.loc[i, 'class_name']
-            first_timestamp = df.loc[i, 'creation_time']
-
-        elif df.loc[i, 'creation_time'] - first_timestamp > timedelta(minutes=30):
+        if time_delta > timedelta(minutes=30):
             # Превышен интервал в 30 минут
             registration_number += 1
             first_timestamp = df.loc[i, 'creation_time']
+        else:
+            probability = calculate_probability(time_delta_seconds)
+            random_value = random.random()
+
+            if df.loc[i, 'class_name'] != current_class and random_value < probability:
+                registration_number += 1
+                current_class = df.loc[i, 'class_name']
+                first_timestamp = df.loc[i, 'creation_time']
 
         df.loc[i, 'registrations_id'] = registration_number
         df.loc[i, 'registration_class'] = current_class
@@ -209,16 +209,18 @@ def duper_method(df, window_size=2, max_interval=timedelta(minutes=30)):
     for i in range(1, len(df)):
         time_delta = df.loc[i, 'creation_time'] - first_timestamp
         time_delta_seconds = time_delta.total_seconds()
-
-        probability = calculate_probability(time_delta_seconds)
-
-        # Рандомное число от 0 до 1
-        random_value = random.random()
-
-        if df.loc[i, 'registration_class'] != current_class or random_value > probability:
+        if time_delta > timedelta(minutes=30):
+            # Превышен интервал в 30 минут
             registration_number += 1
-            current_class = df.loc[i, 'registration_class']
             first_timestamp = df.loc[i, 'creation_time']
+        else:
+            probability = calculate_probability(time_delta_seconds)
+            random_value = random.random()
+
+            if df.loc[i, 'class_name'] != current_class and random_value < probability:
+                registration_number += 1
+                current_class = df.loc[i, 'class_name']
+                first_timestamp = df.loc[i, 'creation_time']
 
         df.loc[i, 'registrations_id'] = registration_number
 
